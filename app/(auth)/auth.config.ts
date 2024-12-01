@@ -3,7 +3,7 @@ import type { NextAuthConfig } from 'next-auth';
 export const authConfig = {
   pages: {
     signIn: '/login',
-    newUser: '/',
+    newUser: '/dashboard',
   },
   providers: [
     // added later in auth.ts since it requires bcrypt which is only compatible with Node.js
@@ -12,27 +12,27 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnChat = nextUrl.pathname.startsWith('/');
-      const isOnRegister = nextUrl.pathname.startsWith('/register');
-      const isOnLogin = nextUrl.pathname.startsWith('/login');
+      const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
+      const isOnApi = nextUrl.pathname.startsWith('/api');
+      const isOnAuth = nextUrl.pathname.startsWith('/login') || 
+                      nextUrl.pathname.startsWith('/register');
 
-      if (isLoggedIn && (isOnLogin || isOnRegister)) {
-        return Response.redirect(new URL('/', nextUrl as unknown as URL));
+      // Redirect to dashboard if logged in and trying to access auth pages
+      if (isLoggedIn && isOnAuth) {
+        return Response.redirect(new URL('/dashboard', nextUrl));
       }
 
-      if (isOnRegister || isOnLogin) {
-        return true; // Always allow access to register and login pages
+      // Allow access to auth pages
+      if (isOnAuth) {
+        return true;
       }
 
-      if (isOnChat) {
-        if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
+      // Protect dashboard and API routes
+      if (isOnDashboard || isOnApi) {
+        return isLoggedIn;
       }
 
-      if (isLoggedIn) {
-        return Response.redirect(new URL('/', nextUrl as unknown as URL));
-      }
-
+      // Allow access to all other pages (marketing pages)
       return true;
     },
   },
