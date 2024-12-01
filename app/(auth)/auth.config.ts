@@ -29,7 +29,10 @@ export const authConfig = {
 
       // Protect dashboard and API routes
       if (isOnDashboard || isOnApi) {
-        return isLoggedIn;
+        if (!isLoggedIn) {
+          return Response.redirect(new URL('/login', nextUrl));
+        }
+        return true;
       }
 
       // Allow access to all other pages (marketing pages)
