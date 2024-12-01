@@ -56,16 +56,14 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-background font-sans antialiased overflow-hidden">
+      <body className="min-h-screen bg-background font-sans antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <div className="relative flex min-h-screen">
-            {children}
-          </div>
+          {children}
           <Toaster position="top-center" richColors closeButton />
         </ThemeProvider>
       </body>
