@@ -6,20 +6,18 @@ import { BetterTooltip } from '@/components/ui/tooltip';
 import { SidebarLeftIcon } from './icons';
 import { Button } from './ui/button';
 
-export function SidebarToggle({
-  className,
-}: ComponentProps<typeof SidebarTrigger>) {
+export function SidebarToggle() {
   const { toggleSidebar } = useSidebar();
 
   return (
-    <BetterTooltip content="Toggle Sidebar" align="start">
-      <Button
-        onClick={toggleSidebar}
-        variant="outline"
-        className="md:px-2 md:h-fit"
-      >
-        <SidebarLeftIcon size={16} />
-      </Button>
-    </BetterTooltip>
+    <Button
+      variant="ghost"
+      size="icon"
+      className="h-9 w-9 md:hidden"
+      onClick={toggleSidebar}
+    >
+      <SidebarLeftIcon className="h-5 w-5" />
+      <span className="sr-only">Toggle Sidebar</span>
+    </Button>
   );
 }

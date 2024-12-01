@@ -19,58 +19,114 @@ import {
 } from '@/components/ui/sidebar';
 import { BetterTooltip } from '@/components/ui/tooltip';
 import Link from 'next/link';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
   const { setOpenMobile } = useSidebar();
 
   return (
-    <Sidebar className="group-data-[side=left]:border-r-0">
-      <SidebarHeader>
-        <SidebarMenu>
-          <div className="flex flex-row justify-between items-center">
-            <Link
-              href="/"
-              onClick={() => {
-                setOpenMobile(false);
-              }}
-              className="flex flex-row gap-3 items-center"
-            >
-              <span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
-                Chatbot
-              </span>
-            </Link>
-            <BetterTooltip content="New Chat" align="start">
-              <Button
-                variant="ghost"
-                type="button"
-                className="p-2 h-fit"
+    <>
+      <Sidebar className="w-[280px] border-r border-border bg-card">
+        <SidebarHeader className="border-b border-border px-4 py-2">
+          <SidebarMenu>
+            <div className="flex items-center justify-between">
+              <Link
+                href="/"
                 onClick={() => {
                   setOpenMobile(false);
-                  router.push('/');
-                  router.refresh();
                 }}
+                className="flex items-center space-x-2"
               >
-                <PlusIcon />
-              </Button>
-            </BetterTooltip>
-          </div>
-        </SidebarMenu>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup className="-mx-2">
-          <SidebarHistory user={user} />
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter className="gap-0 -mx-2">
-        {user && (
+                <span className="text-lg font-semibold hover:text-primary transition-colors">
+                  Chatbot
+                </span>
+              </Link>
+              <BetterTooltip content="New Chat" align="start">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => {
+                    setOpenMobile(false);
+                    router.push('/');
+                    router.refresh();
+                  }}
+                >
+                  <PlusIcon className="h-4 w-4" />
+                </Button>
+              </BetterTooltip>
+            </div>
+          </SidebarMenu>
+        </SidebarHeader>
+        <SidebarContent className="px-4">
           <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarUserNav user={user} />
-            </SidebarGroupContent>
+            <SidebarHistory user={user} />
           </SidebarGroup>
-        )}
-      </SidebarFooter>
-    </Sidebar>
+        </SidebarContent>
+        <SidebarFooter className="border-t border-border p-4">
+          {user && (
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarUserNav user={user} />
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
+        </SidebarFooter>
+      </Sidebar>
+
+      {/* Mobile Sidebar */}
+      <Sheet>
+        <SheetContent side="left" className="w-[280px] p-0">
+          <Sidebar className="border-none">
+            <SidebarHeader className="border-b border-border px-4 py-2">
+              <SidebarMenu>
+                <div className="flex items-center justify-between">
+                  <Link
+                    href="/"
+                    onClick={() => {
+                      setOpenMobile(false);
+                    }}
+                    className="flex items-center space-x-2"
+                  >
+                    <span className="text-lg font-semibold hover:text-primary transition-colors">
+                      Chatbot
+                    </span>
+                  </Link>
+                  <BetterTooltip content="New Chat" align="start">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => {
+                        setOpenMobile(false);
+                        router.push('/');
+                        router.refresh();
+                      }}
+                    >
+                      <PlusIcon className="h-4 w-4" />
+                    </Button>
+                  </BetterTooltip>
+                </div>
+              </SidebarMenu>
+            </SidebarHeader>
+            <SidebarContent className="px-4">
+              <SidebarGroup>
+                <SidebarHistory user={user} />
+              </SidebarGroup>
+            </SidebarContent>
+            <SidebarFooter className="border-t border-border p-4">
+              {user && (
+                <SidebarGroup>
+                  <SidebarGroupContent>
+                    <SidebarUserNav user={user} />
+                  </SidebarGroupContent>
+                </SidebarGroup>
+              )}
+            </SidebarFooter>
+          </Sidebar>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }
