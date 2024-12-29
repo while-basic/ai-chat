@@ -23,7 +23,7 @@ import {
 
 // biome-ignore lint: Forbidden non-null assertion.
 const client = postgres(process.env.POSTGRES_URL!);
-const db = drizzle(client);
+export const db = drizzle(client);
 
 export async function getUser(email: string): Promise<Array<User>> {
   try {
@@ -276,6 +276,44 @@ export async function getSuggestionsByDocumentId({
     console.error(
       'Failed to get suggestions by document version from database',
     );
+    throw error;
+  }
+}
+
+export async function getAllChatsWithMessages() {
+  try {
+    const allChats = await db.select().from(chat).orderBy(desc(chat.createdAt));
+    
+    const chatsWithMessages = await Promise.all(
+      allChats.map(async (chat) => {
+        const messages = await db
+          .select()
+          .from(message)
+          .where(eq(message.chatId, chat.id))
+          .orderBy(asc(message.createdAt));
+        
+        return {
+          ...chat,
+          messages,
+        };
+      })
+    );
+    
+    return chatsWithMessages;
+  } catch (error) {
+    console.error('Failed to get all chats with messages from database');
+    throw error;
+  }
+}
+
+export async function promoteToAdmin(email: string) {
+  try {
+    return await db
+      .update(user)
+      .set({ isAdmin: true })
+      .where(eq(user.email, email));
+  } catch (error) {
+    console.error('Failed to promote user to admin');
     throw error;
   }
 }

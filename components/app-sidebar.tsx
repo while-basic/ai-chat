@@ -2,6 +2,7 @@
 
 import type { User } from 'next-auth';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 import { PlusIcon } from '@/components/icons';
 import { SidebarHistory } from '@/components/sidebar-history';
@@ -18,58 +19,50 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { BetterTooltip } from '@/components/ui/tooltip';
-import Link from 'next/link';
 
-export function AppSidebar({ user }: { user: User | undefined }) {
+interface AppSidebarProps {
+  user?: User & { isAdmin?: boolean };
+}
+
+export function AppSidebar({ user }: AppSidebarProps) {
   const router = useRouter();
   const { setOpenMobile } = useSidebar();
 
   return (
-    <Sidebar className="group-data-[side=left]:border-r-0">
+    <Sidebar>
       <SidebarHeader>
         <SidebarMenu>
-          <div className="flex flex-row justify-between items-center">
-            <Link
-              href="/"
+          <BetterTooltip content="New Chat" align="start">
+            <Button
+              variant="outline"
+              className="h-10 w-10"
               onClick={() => {
                 setOpenMobile(false);
+                router.push('/');
               }}
-              className="flex flex-row gap-3 items-center"
             >
-              <span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
-                Chatbot
-              </span>
-            </Link>
-            <BetterTooltip content="New Chat" align="start">
-              <Button
-                variant="ghost"
-                type="button"
-                className="p-2 h-fit"
-                onClick={() => {
-                  setOpenMobile(false);
-                  router.push('/');
-                  router.refresh();
-                }}
-              >
-                <PlusIcon />
-              </Button>
-            </BetterTooltip>
-          </div>
+              <PlusIcon />
+            </Button>
+          </BetterTooltip>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup className="-mx-2">
-          <SidebarHistory user={user} />
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarHistory user={user} />
+          </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="gap-0 -mx-2">
-        {user && (
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarUserNav user={user} />
-            </SidebarGroupContent>
-          </SidebarGroup>
+      <SidebarFooter>
+        {user?.isAdmin && (
+          <Link
+            href="/admin"
+            className="block px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 rounded-md mb-2"
+          >
+            Admin Panel
+          </Link>
         )}
+        <SidebarUserNav user={user as User} />
       </SidebarFooter>
     </Sidebar>
   );
