@@ -1,3 +1,12 @@
+/*
+ * This is an admin route handler for blocking/unblocking users.
+ * Currently not in use, but can be uncommented when user moderation features are needed.
+ * 
+ * Endpoint: PATCH /api/users/[id]/block
+ * Purpose: Allows administrators to toggle a user's blocked status
+ */
+
+/*
 import { auth } from '@/lib/auth';
 import { db, getUser } from '@/lib/db/queries';
 import { user } from '@/lib/db/schema';
@@ -34,4 +43,5 @@ export async function PATCH(
     console.error('Error updating user block status:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
-} 
+}
+*/ 
