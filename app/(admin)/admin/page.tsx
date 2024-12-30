@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MessageSquare, Users, TrendingUp, Activity } from 'lucide-react';
+import { MessageSquare, Users, TrendingUp, Activity, AlertCircle } from 'lucide-react';
 import { Line, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -58,23 +58,57 @@ export default function AdminDashboard() {
     chatDurations: [],
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await fetch('/api/admin/stats');
-        if (!response.ok) throw new Error('Failed to fetch stats');
-        const data = await response.json();
-        setStats(data);
-      } catch (error) {
-        console.error('Error fetching stats:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchStats();
   }, []);
+
+  const fetchStats = async () => {
+    try {
+      setError(null);
+      const response = await fetch('/api/admin/stats');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error || `HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setStats(data);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      setError(error instanceof Error ? error.message : 'Failed to fetch statistics');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="animate-spin rounded-full size-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] p-6 text-center">
+        <AlertCircle className="size-12 text-destructive mb-4" />
+        <h2 className="text-xl font-semibold text-destructive mb-2">Error Loading Dashboard</h2>
+        <p className="text-muted-foreground mb-4">{error}</p>
+        <button
+          type="button"
+          onClick={() => {
+            setLoading(true);
+            fetchStats();
+          }}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   const messageChartData = {
     labels: stats.messagesByDay.map(d => d.date),
@@ -111,26 +145,18 @@ export default function AdminDashboard() {
     ],
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
-  }
-
   return (
-    <div className="p-6 space-y-8">
-      <h1 className="text-2xl font-bold text-foreground">Analytics Dashboard</h1>
+    <div className="p-4 md:p-6 max-w-7xl mx-auto">
+      <h1 className="text-2xl font-bold text-foreground mb-8">Analytics Dashboard</h1>
       
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         {/* Total Chats Card */}
         <div className="bg-card overflow-hidden shadow rounded-lg border border-border">
           <div className="p-5">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <MessageSquare className="h-6 w-6 text-muted-foreground" />
+              <div className="shrink-0">
+                <MessageSquare className="size-6 text-muted-foreground" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -150,8 +176,8 @@ export default function AdminDashboard() {
         <div className="bg-card overflow-hidden shadow rounded-lg border border-border">
           <div className="p-5">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Users className="h-6 w-6 text-muted-foreground" />
+              <div className="shrink-0">
+                <Users className="size-6 text-muted-foreground" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -171,8 +197,8 @@ export default function AdminDashboard() {
         <div className="bg-card overflow-hidden shadow rounded-lg border border-border">
           <div className="p-5">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <Activity className="h-6 w-6 text-muted-foreground" />
+              <div className="shrink-0">
+                <Activity className="size-6 text-muted-foreground" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -192,8 +218,8 @@ export default function AdminDashboard() {
         <div className="bg-card overflow-hidden shadow rounded-lg border border-border">
           <div className="p-5">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <TrendingUp className="h-6 w-6 text-muted-foreground" />
+              <div className="shrink-0">
+                <TrendingUp className="size-6 text-muted-foreground" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
