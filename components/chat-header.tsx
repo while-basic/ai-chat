@@ -29,8 +29,9 @@ export function ChatHeader({ selectedModelId }: { selectedModelId: string }) {
               router.push('/');
               router.refresh();
             }}
+            type="button"
           >
-            <PlusIcon />
+            <PlusIcon size={16} />
             <span className="md:sr-only">New Chat</span>
           </Button>
         </BetterTooltip>

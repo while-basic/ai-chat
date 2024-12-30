@@ -158,6 +158,7 @@ const SidebarProvider = React.forwardRef<
               className,
             )}
             data-state={state}
+            inert={state === 'collapsed'}
             ref={ref}
             {...props}
           >
