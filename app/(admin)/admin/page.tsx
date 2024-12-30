@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { BarChart3, MessageSquare, Users, Clock, TrendingUp, Activity } from 'lucide-react';
+import { MessageSquare, Users, TrendingUp, Activity } from 'lucide-react';
 import { Line, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,

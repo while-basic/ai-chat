@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Search, Calendar, Star, Filter, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Star, ChevronDown, ChevronUp } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface MessageContent {
@@ -117,12 +117,14 @@ export default function TranscriptsPage() {
         switch (dateFilter) {
           case 'today':
             return date.toDateString() === today.toDateString();
-          case 'week':
+          case 'week': {
             const weekAgo = new Date(today.setDate(today.getDate() - 7));
             return date >= weekAgo;
-          case 'month':
+          }
+          case 'month': {
             const monthAgo = new Date(today.setMonth(today.getMonth() - 1));
             return date >= monthAgo;
+          }
           default:
             return true;
         }
@@ -139,7 +141,7 @@ export default function TranscriptsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+        <div className="animate-spin rounded-full size-8 border-b-2 border-primary" />
       </div>
     );
   }
@@ -152,7 +154,7 @@ export default function TranscriptsPage() {
         {/* Search and Filters */}
         <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 md:items-center">
           <div className="relative flex-1 sm:flex-none sm:w-64">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search transcripts..."
@@ -175,10 +177,11 @@ export default function TranscriptsPage() {
             </select>
 
             <button
+              type="button"
               onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
               className="flex items-center gap-2 px-4 py-2 border rounded-md bg-background text-foreground whitespace-nowrap"
             >
-              {sortOrder === 'desc' ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+              {sortOrder === 'desc' ? <ChevronDown className="size-4" /> : <ChevronUp className="size-4" />}
               <span className="hidden sm:inline">Date</span>
             </button>
           </div>
@@ -198,22 +201,32 @@ export default function TranscriptsPage() {
               className="border rounded-lg bg-card"
             >
               {/* Transcript Header */}
-              <div 
-                className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 cursor-pointer hover:bg-muted/50"
+              <button
+                type="button"
+                className="w-full p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-left hover:bg-muted/50"
                 onClick={() => setExpandedTranscript(
                   expandedTranscript === transcript.id ? null : transcript.id
                 )}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setExpandedTranscript(
+                      expandedTranscript === transcript.id ? null : transcript.id
+                    );
+                  }
+                }}
               >
                 <div className="flex items-start sm:items-center gap-4">
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleStar(transcript.id);
                     }}
-                    className="flex-shrink-0 text-muted-foreground hover:text-yellow-400"
+                    className="shrink-0 text-muted-foreground hover:text-yellow-400"
                   >
                     <Star
-                      className={`h-5 w-5 ${
+                      className={`size-5 ${
                         starredTranscripts.has(transcript.id) 
                           ? 'fill-yellow-400 text-yellow-400' 
                           : ''
@@ -234,12 +247,12 @@ export default function TranscriptsPage() {
                     {transcript.messages.length} messages
                   </span>
                   {expandedTranscript === transcript.id ? (
-                    <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                    <ChevronUp className="size-5" />
                   ) : (
-                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                    <ChevronDown className="size-5" />
                   )}
                 </div>
-              </div>
+              </button>
 
               {/* Transcript Content */}
               {expandedTranscript === transcript.id && (
@@ -259,7 +272,7 @@ export default function TranscriptsPage() {
                           {format(new Date(message.createdAt), 'h:mm a')}
                         </div>
                       </div>
-                      <div className="flex-grow whitespace-pre-wrap break-words">
+                      <div className="grow whitespace-pre-wrap break-words">
                         {parseMessageContent(message.content)}
                       </div>
                     </div>

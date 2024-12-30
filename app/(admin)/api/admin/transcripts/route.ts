@@ -1,6 +1,5 @@
 import { auth } from '@/app/(auth)/auth';
-import { getUser } from '@/lib/db/queries';
-import { db } from '@/lib/db/queries';
+import { db, getUser } from '@/lib/db/queries';
 import { chat, message, user } from '@/lib/db/schema';
 import { desc, eq } from 'drizzle-orm';
 

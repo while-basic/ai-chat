@@ -53,13 +53,14 @@ export default function AdminLayout({
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="p-2 hover:bg-muted rounded-md"
             >
               {sidebarOpen ? (
-                <X className="h-6 w-6" />
+                <X className="size-6" />
               ) : (
-                <Menu className="h-6 w-6" />
+                <Menu className="size-6" />
               )}
             </button>
             <span className="font-semibold text-lg">Admin Panel</span>
@@ -67,16 +68,20 @@ export default function AdminLayout({
           
           {/* Mobile User Menu */}
           <div className="relative group">
-            <button className="flex items-center gap-2 p-2 hover:bg-muted rounded-md">
+            <button
+              type="button"
+              className="flex items-center gap-2 p-2 hover:bg-muted rounded-md"
+            >
               <span className="text-sm font-medium">Admin</span>
-              <ChevronDown className="h-4 w-4" />
+              <ChevronDown className="size-4" />
             </button>
             <div className="absolute right-0 mt-2 w-48 bg-popover rounded-md shadow-lg border hidden group-hover:block">
               <button
+                type="button"
                 onClick={() => signOut()}
                 className="flex w-full items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-muted"
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="size-4" />
                 Sign out
               </button>
             </div>
@@ -87,7 +92,14 @@ export default function AdminLayout({
       {/* Mobile Sidebar */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="fixed inset-0 bg-black/20" onClick={() => setSidebarOpen(false)} />
+          <button
+            type="button"
+            className="fixed inset-0 bg-black/20"
+            onClick={() => setSidebarOpen(false)}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setSidebarOpen(false);
+            }}
+          />
           <div className="fixed inset-y-0 left-0 w-64 bg-card border-r shadow-lg">
             <div className="h-full flex flex-col">
               <div className="p-4 border-b">
@@ -107,7 +119,7 @@ export default function AdminLayout({
                       }`}
                       onClick={() => setSidebarOpen(false)}
                     >
-                      <item.icon className="h-5 w-5" />
+                      <item.icon className="size-5" />
                       {item.name}
                     </Link>
                   );
@@ -120,7 +132,7 @@ export default function AdminLayout({
 
       {/* Desktop Sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex flex-col flex-grow bg-card border-r">
+        <div className="flex flex-col grow bg-card border-r">
           <div className="p-4 border-b">
             <span className="font-semibold text-lg">Admin Panel</span>
           </div>
@@ -137,7 +149,7 @@ export default function AdminLayout({
                       : 'text-muted-foreground hover:bg-muted'
                   }`}
                 >
-                  <item.icon className="h-5 w-5" />
+                  <item.icon className="size-5" />
                   {item.name}
                 </Link>
               );
@@ -147,16 +159,20 @@ export default function AdminLayout({
           {/* Desktop User Menu */}
           <div className="p-4 border-t">
             <div className="relative group">
-              <button className="flex items-center gap-2 p-2 w-full hover:bg-muted rounded-md">
+              <button
+                type="button"
+                className="flex items-center gap-2 p-2 w-full hover:bg-muted rounded-md"
+              >
                 <span className="text-sm font-medium">Admin</span>
-                <ChevronDown className="h-4 w-4 ml-auto" />
+                <ChevronDown className="size-4 ml-auto" />
               </button>
               <div className="absolute bottom-full left-0 mb-2 w-full bg-popover rounded-md shadow-lg border hidden group-hover:block">
                 <button
+                  type="button"
                   onClick={() => signOut()}
                   className="flex w-full items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-muted"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="size-4" />
                   Sign out
                 </button>
               </div>
