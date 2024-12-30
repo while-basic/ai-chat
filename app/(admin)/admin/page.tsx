@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { MessageSquare, Users, TrendingUp, Activity, AlertCircle } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
+import { MessageSquare, Users, TrendingUp, Activity, RefreshCw } from 'lucide-react';
 import { Line, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -59,56 +59,37 @@ export default function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       setError(null);
       const response = await fetch('/api/admin/stats');
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.error || `HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error('Failed to fetch stats');
       const data = await response.json();
       setStats(data);
+      setLastUpdated(new Date());
     } catch (error) {
       console.error('Error fetching stats:', error);
-      setError(error instanceof Error ? error.message : 'Failed to fetch statistics');
+      setError('Failed to load statistics. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="animate-spin rounded-full size-8 border-b-2 border-primary" />
-      </div>
-    );
-  }
+  // Initial load
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] p-6 text-center">
-        <AlertCircle className="size-12 text-destructive mb-4" />
-        <h2 className="text-xl font-semibold text-destructive mb-2">Error Loading Dashboard</h2>
-        <p className="text-muted-foreground mb-4">{error}</p>
-        <button
-          type="button"
-          onClick={() => {
-            setLoading(true);
-            fetchStats();
-          }}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-        >
-          Try Again
-        </button>
-      </div>
-    );
-  }
+  // Auto-refresh every 5 minutes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchStats();
+    }, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [fetchStats]);
 
   const messageChartData = {
     labels: stats.messagesByDay.map(d => d.date),
@@ -145,12 +126,44 @@ export default function AdminDashboard() {
     ],
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="animate-spin rounded-full size-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold text-foreground mb-8">Analytics Dashboard</h1>
+    <div className="p-6 space-y-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-2xl font-bold text-foreground">Analytics Dashboard</h1>
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <span>
+            Last updated: {lastUpdated.toLocaleTimeString()}
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setLoading(true);
+              fetchStats();
+            }}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-muted"
+          >
+            <RefreshCw className="size-4" />
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="bg-destructive/10 text-destructive px-4 py-2 rounded-md">
+          {error}
+        </div>
+      )}
       
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {/* Total Chats Card */}
         <div className="bg-card overflow-hidden shadow rounded-lg border border-border">
           <div className="p-5">

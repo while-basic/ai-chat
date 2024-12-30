@@ -1,52 +1,58 @@
 import { auth } from '@/app/(auth)/auth';
 import { db, getUser } from '@/lib/db/queries';
 import { chat, message, user } from '@/lib/db/schema';
-import { count, sql, and, gte } from 'drizzle-orm';
+import { count, sql, gte, desc, and, eq } from 'drizzle-orm';
 import { subDays } from 'date-fns';
 
 export const runtime = 'nodejs';
 
 export async function GET() {
+  const session = await auth();
+
+  if (!session?.user?.email) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const [currentUser] = await getUser(session.user.email);
+  
+  if (!currentUser?.isAdmin) {
+    return Response.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   try {
-    const session = await auth();
-
-    if (!session?.user?.email) {
-      return Response.json(
-        { error: 'You must be logged in to access this resource' },
-        { status: 401 }
-      );
-    }
-
-    const [currentUser] = await getUser(session.user.email);
-    
-    if (!currentUser?.isAdmin) {
-      return Response.json(
-        { error: 'You must be an admin to access this resource' },
-        { status: 403 }
-      );
-    }
-
-    // Basic stats with accurate chat count
+    // Total chats (all chats, even without messages)
     const [totalChats] = await db
-      .select({ value: sql`COUNT(DISTINCT ${message.chatId})` })
-      .from(message);
-      
-    const [totalUsers] = await db.select({ value: count() }).from(user);
-    const [totalMessages] = await db.select({ value: count() }).from(message);
+      .select({ value: count() })
+      .from(chat);
 
-    // Active users (users who have sent a message in the last 7 days)
+    // Total users
+    const [totalUsers] = await db
+      .select({ value: count() })
+      .from(user);
+
+    // Total messages
+    const [totalMessages] = await db
+      .select({ value: count() })
+      .from(message);
+
+    // Active users (users who have chats with messages in the last 7 days)
     const activeDate = subDays(new Date(), 7);
     const [activeUsers] = await db
-      .select({ value: count(user.id) })
+      .select({
+        value: sql`COUNT(DISTINCT ${user.id})`
+      })
       .from(user)
-      .innerJoin(chat, sql`${chat.userId} = ${user.id}`)
-      .innerJoin(message, sql`${message.chatId} = ${chat.id}`)
+      .innerJoin(chat, eq(chat.userId, user.id))
+      .innerJoin(message, eq(message.chatId, chat.id))
       .where(gte(message.createdAt, activeDate));
 
-    // Average messages per chat
+    // Average messages per chat (only for chats with messages)
     const [avgMessagesPerChat] = await db
       .select({
-        value: sql<number>`CAST(COUNT(${message.id}) AS FLOAT) / COUNT(DISTINCT ${message.chatId})`
+        value: sql<number>`
+          CAST(COUNT(${message.id}) AS FLOAT) / 
+          NULLIF(COUNT(DISTINCT ${message.chatId}), 0)
+        `
       })
       .from(message);
 
@@ -61,19 +67,19 @@ export async function GET() {
       .groupBy(sql`DATE(${message.createdAt})`)
       .orderBy(sql`DATE(${message.createdAt})`);
 
-    // User growth (last 30 days) - based on first message date
+    // User growth (based on user creation, last 30 days)
     const userGrowth = await db
       .select({
-        date: sql<string>`DATE(MIN(${message.createdAt}))`,
-        count: sql`COUNT(DISTINCT ${chat.userId})`,
+        date: sql<string>`DATE(${chat.createdAt})`,
+        count: sql`COUNT(DISTINCT ${user.id})`,
       })
-      .from(chat)
-      .innerJoin(message, sql`${message.chatId} = ${chat.id}`)
-      .where(gte(message.createdAt, subDays(new Date(), 30)))
-      .groupBy(sql`DATE(MIN(${message.createdAt}))`)
-      .orderBy(sql`DATE(MIN(${message.createdAt}))`);
+      .from(user)
+      .innerJoin(chat, eq(chat.userId, user.id))
+      .where(gte(chat.createdAt, subDays(new Date(), 30)))
+      .groupBy(sql`DATE(${chat.createdAt})`)
+      .orderBy(sql`DATE(${chat.createdAt})`);
 
-    // Chat duration distribution
+    // Chat duration distribution (for chats with 2+ messages)
     const chatDurations = await db
       .select({
         duration: sql<string>`
@@ -84,30 +90,36 @@ export async function GET() {
             ELSE '> 30 min'
           END
         `,
-        count: count(message.chatId),
+        count: sql`COUNT(DISTINCT ${message.chatId})`,
       })
       .from(message)
       .groupBy(message.chatId)
       .having(sql`COUNT(${message.id}) >= 2`);
 
-    return Response.json({
+    // Format the response
+    const formattedStats = {
       totalChats: totalChats.value,
       totalUsers: totalUsers.value,
       totalMessages: totalMessages.value,
       activeUsers: activeUsers.value,
-      averageMessagesPerChat: avgMessagesPerChat.value || 0,
-      messagesByDay,
-      userGrowth,
-      chatDurations,
-    });
+      averageMessagesPerChat: Number(avgMessagesPerChat.value || 0).toFixed(1),
+      messagesByDay: messagesByDay.map(day => ({
+        date: day.date,
+        count: Number(day.count)
+      })),
+      userGrowth: userGrowth.map(growth => ({
+        date: growth.date,
+        count: Number(growth.count)
+      })),
+      chatDurations: chatDurations.map(duration => ({
+        duration: duration.duration,
+        count: Number(duration.count)
+      }))
+    };
+
+    return Response.json(formattedStats);
   } catch (error) {
-    console.error('Error in stats API:', error);
-    return Response.json(
-      { 
-        error: 'An error occurred while fetching statistics',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+    console.error('Error fetching stats:', error);
+    return Response.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 } 
