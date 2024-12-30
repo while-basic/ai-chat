@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Search, Star, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, Star, ChevronDown, ChevronUp, ChevronRight, User2, Bot } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface MessageContent {
@@ -147,7 +147,7 @@ export default function TranscriptsPage() {
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto">
+    <div className="p-4 md:p-6 space-y-6">
       <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center md:justify-between mb-6">
         <h1 className="text-2xl font-bold text-foreground">Chat Transcripts</h1>
         
@@ -196,14 +196,9 @@ export default function TranscriptsPage() {
           </div>
         ) : (
           filteredTranscripts.map(transcript => (
-            <div
-              key={transcript.id}
-              className="border rounded-lg bg-card"
-            >
-              {/* Transcript Header */}
-              <button
-                type="button"
-                className="w-full p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-left hover:bg-muted/50"
+            <div key={transcript.id} className="border rounded-lg hover:border-border/80">
+              <div 
+                className="w-full p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 cursor-pointer"
                 onClick={() => setExpandedTranscript(
                   expandedTranscript === transcript.id ? null : transcript.id
                 )}
@@ -215,8 +210,10 @@ export default function TranscriptsPage() {
                     );
                   }
                 }}
+                role="button"
+                tabIndex={0}
               >
-                <div className="flex items-start sm:items-center gap-4">
+                <div className="flex items-center gap-4">
                   <button
                     type="button"
                     onClick={(e) => {
@@ -224,56 +221,53 @@ export default function TranscriptsPage() {
                       toggleStar(transcript.id);
                     }}
                     className="shrink-0 text-muted-foreground hover:text-yellow-400"
+                    aria-label={starredTranscripts.has(transcript.id) ? "Unstar transcript" : "Star transcript"}
                   >
-                    <Star
-                      className={`size-5 ${
-                        starredTranscripts.has(transcript.id) 
-                          ? 'fill-yellow-400 text-yellow-400' 
-                          : ''
-                      }`}
-                    />
+                    {starredTranscripts.has(transcript.id) ? (
+                      <Star className="size-5 fill-yellow-400 text-yellow-400" />
+                    ) : (
+                      <Star className="size-5" />
+                    )}
                   </button>
-                  <div className="min-w-0">
-                    <h3 className="font-semibold text-foreground truncate">{transcript.title}</h3>
-                    <div className="text-sm text-muted-foreground flex flex-wrap gap-2">
-                      <span className="truncate">{transcript.userEmail}</span>
-                      <span className="hidden sm:inline">•</span>
-                      <span>{format(new Date(transcript.createdAt), 'MMM d, yyyy h:mm a')}</span>
-                    </div>
+
+                  <div>
+                    <h3 className="font-medium text-foreground">
+                      {transcript.title || 'Untitled Chat'}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {transcript.userEmail} • {format(new Date(transcript.createdAt), 'MMM d, yyyy h:mm a')}
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 ml-9 sm:ml-0">
-                  <span className="text-sm text-muted-foreground whitespace-nowrap">
+
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-muted-foreground">
                     {transcript.messages.length} messages
                   </span>
-                  {expandedTranscript === transcript.id ? (
-                    <ChevronUp className="size-5" />
-                  ) : (
-                    <ChevronDown className="size-5" />
-                  )}
+                  <ChevronRight className="size-5 text-muted-foreground" />
                 </div>
-              </button>
+              </div>
 
-              {/* Transcript Content */}
               {expandedTranscript === transcript.id && (
-                <div className="border-t p-4 space-y-4 overflow-x-auto">
-                  {transcript.messages.map((message, index) => (
-                    <div
-                      key={message.id}
-                      className={`flex flex-col sm:flex-row gap-2 sm:gap-4 ${
-                        message.role === 'assistant' ? 'bg-muted/30' : ''
-                      } p-3 rounded-md`}
-                    >
-                      <div className="flex items-center justify-between sm:block">
-                        <div className="text-sm font-medium text-muted-foreground">
-                          {message.role}
-                        </div>
-                        <div className="text-sm text-muted-foreground sm:mt-1">
-                          {format(new Date(message.createdAt), 'h:mm a')}
-                        </div>
+                <div className="border-t p-4 space-y-4">
+                  {transcript.messages.map((message) => (
+                    <div key={message.id} className="flex gap-4">
+                      <div className={`shrink-0 size-8 rounded-full flex items-center justify-center ${
+                        message.role === 'user' ? 'bg-primary/10' : 'bg-secondary/10'
+                      }`}>
+                        {message.role === 'user' ? (
+                          <User2 className="size-4 text-primary" />
+                        ) : (
+                          <Bot className="size-4 text-secondary" />
+                        )}
                       </div>
-                      <div className="grow whitespace-pre-wrap break-words">
-                        {parseMessageContent(message.content)}
+                      <div className="flex-1 space-y-1">
+                        <p className="text-sm font-medium text-foreground">
+                          {message.role === 'user' ? 'User' : 'AI'}
+                        </p>
+                        <div className="prose prose-sm max-w-none text-muted-foreground">
+                          {parseMessageContent(message.content)}
+                        </div>
                       </div>
                     </div>
                   ))}

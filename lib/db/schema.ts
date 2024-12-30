@@ -9,6 +9,7 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  integer,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -16,6 +17,8 @@ export const user = pgTable('User', {
   email: varchar('email', { length: 64 }).notNull(),
   password: varchar('password', { length: 64 }),
   isAdmin: boolean('isAdmin').notNull().default(false),
+  isBlocked: boolean('isBlocked').notNull().default(false),
+  lastLoginAt: timestamp('lastLoginAt'),
 });
 
 export type User = InferSelectModel<typeof user>;
@@ -108,3 +111,16 @@ export const suggestion = pgTable(
 );
 
 export type Suggestion = InferSelectModel<typeof suggestion>;
+
+export const settings = pgTable('Settings', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  maxMessagesPerChat: integer('maxMessagesPerChat').notNull().default(50),
+  maxChatsPerUser: integer('maxChatsPerUser').notNull().default(10),
+  maxMessageLength: integer('maxMessageLength').notNull().default(2000),
+  allowNewUsers: boolean('allowNewUsers').notNull().default(true),
+  requireEmailVerification: boolean('requireEmailVerification').notNull().default(true),
+  maintenanceMode: boolean('maintenanceMode').notNull().default(false),
+  systemPrompt: text('systemPrompt').default(''),
+});
+
+export type Settings = InferSelectModel<typeof settings>;
