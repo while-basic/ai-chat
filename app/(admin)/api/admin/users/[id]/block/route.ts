@@ -1,4 +1,4 @@
-import { auth } from '@/app/(auth)/auth';
+import { auth } from '@/lib/auth';
 import { db, getUser } from '@/lib/db/queries';
 import { user } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
@@ -7,13 +7,9 @@ import { type NextRequest } from 'next/server';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-type Props = {
-  params: { id: string }
-}
-
 export async function PATCH(
   req: NextRequest,
-  props: Props
+  { params }: { params: { id: string } }
 ) {
   const session = await auth();
 
@@ -34,7 +30,7 @@ export async function PATCH(
     await db
       .update(user)
       .set({ isBlocked })
-      .where(eq(user.id, props.params.id));
+      .where(eq(user.id, params.id));
 
     return Response.json({ success: true });
   } catch (error) {
