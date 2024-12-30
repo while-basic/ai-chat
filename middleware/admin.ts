@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { User } from '@/lib/types/user';
 
+export const runtime = 'nodejs';
+
 export async function adminMiddleware(request: NextRequest) {
   const session = await auth();
 

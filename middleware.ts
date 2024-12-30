@@ -2,6 +2,8 @@ import { auth } from '@/app/(auth)/auth';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+export const runtime = 'nodejs';
+
 export async function middleware(request: NextRequest) {
   // Check if the request is for a public file
   if (request.nextUrl.pathname.startsWith('/_next') || request.nextUrl.pathname.startsWith('/public')) {
