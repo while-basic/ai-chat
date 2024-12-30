@@ -2,13 +2,19 @@ import { auth } from '@/app/(auth)/auth';
 import { db, getUser } from '@/lib/db/queries';
 import { user } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { type NextRequest } from 'next/server';
+import { NextRequest } from 'next/server';
 
 export const runtime = 'nodejs';
 
+type RouteContext = {
+  params: {
+    id: string;
+  };
+};
+
 export async function PATCH(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: RouteContext
 ) {
   const session = await auth();
 
@@ -29,7 +35,7 @@ export async function PATCH(
     await db
       .update(user)
       .set({ isBlocked })
-      .where(eq(user.id, context.params.id));
+      .where(eq(user.id, params.id));
 
     return Response.json({ success: true });
   } catch (error) {
