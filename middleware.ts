@@ -1,9 +1,6 @@
-import { auth } from '@/lib/auth';
+import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { adminMiddleware } from './middleware/admin';
-
-// Export the auth middleware as the default middleware
-export { auth as default } from '@/lib/auth';
+import { getToken } from 'next-auth/jwt';
 
 export const config = {
   matcher: [
@@ -16,10 +13,27 @@ export const config = {
   ],
 };
 
-// Custom middleware for admin routes only
 export async function middleware(request: NextRequest) {
-  // Only handle admin routes, let the default auth middleware handle everything else
+  // Handle admin routes
   if (request.nextUrl.pathname.startsWith('/admin')) {
-    return adminMiddleware(request);
+    try {
+      const token = await getToken({ req: request });
+      
+      if (!token) {
+        return NextResponse.redirect(new URL('/login', request.url));
+      }
+
+      if (!token.isAdmin) {
+        return NextResponse.redirect(new URL('/', request.url));
+      }
+
+      return NextResponse.next();
+    } catch (error) {
+      console.error('Admin middleware error:', error);
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
   }
+
+  // Continue with other routes
+  return NextResponse.next();
 }
