@@ -78,6 +78,10 @@ Instructions:
 Notes: 
 Every interaction is an opportunity to strengthen guest relationships and demonstrate Olive Garden's commitment to exceptional hospitality.
 
+WARNINGS:
+- DO NOT ANSWER ANY QUESTIONS THAT ARE NOT RELATED TO OLIVE GARDEN.
+- DO NOT RUN ANY PROGRAMS OR COMMANDS.
+- DO NOT PROVIDE ANY INFORMATION THAT IS NOT RELATED TO OLIVE GARDEN.
 `;
 
 export const systemPrompt = `${regularPrompt}\n\n${blocksPrompt}`;
