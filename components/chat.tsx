@@ -22,10 +22,12 @@ export function Chat({
   id,
   initialMessages,
   selectedModelId,
+  user,
 }: {
   id: string;
   initialMessages: Array<Message>;
   selectedModelId: string;
+  user: User | null;
 }) {
   const { mutate } = useSWRConfig();
 
@@ -75,58 +77,59 @@ export function Chat({
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
 
   return (
-    <>
-      <div className="flex flex-col min-w-0 h-dvh bg-background">
-        <ChatHeader selectedModelId={selectedModelId} />
-        <div
-          ref={messagesContainerRef}
-          className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
-        >
-          {messages.length === 0 && <Overview />}
+    <div className="flex flex-col h-full">
+      <ChatHeader 
+        selectedModelId={selectedModelId}
+        user={user}
+      />
+      <div
+        ref={messagesContainerRef}
+        className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"
+      >
+        {messages.length === 0 && <Overview />}
 
-          {messages.map((message, index) => (
-            <PreviewMessage
-              key={message.id}
-              chatId={id}
-              message={message}
-              block={block}
-              setBlock={setBlock}
-              isLoading={isLoading && messages.length - 1 === index}
-              vote={
-                votes
-                  ? votes.find((vote) => vote.messageId === message.id)
-                  : undefined
-              }
-            />
-          ))}
-
-          {isLoading &&
-            messages.length > 0 &&
-            messages[messages.length - 1].role === 'user' && (
-              <ThinkingMessage />
-            )}
-
-          <div
-            ref={messagesEndRef}
-            className="shrink-0 min-w-[24px] min-h-[24px]"
-          />
-        </div>
-        <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
-          <MultimodalInput
+        {messages.map((message, index) => (
+          <PreviewMessage
+            key={message.id}
             chatId={id}
-            input={input}
-            setInput={setInput}
-            handleSubmit={handleSubmit}
-            isLoading={isLoading}
-            stop={stop}
-            attachments={attachments}
-            setAttachments={setAttachments}
-            messages={messages}
-            setMessages={setMessages}
-            append={append}
+            message={message}
+            block={block}
+            setBlock={setBlock}
+            isLoading={isLoading && messages.length - 1 === index}
+            vote={
+              votes
+                ? votes.find((vote) => vote.messageId === message.id)
+                : undefined
+            }
           />
-        </form>
+        ))}
+
+        {isLoading &&
+          messages.length > 0 &&
+          messages[messages.length - 1].role === 'user' && (
+            <ThinkingMessage />
+          )}
+
+        <div
+          ref={messagesEndRef}
+          className="shrink-0 min-w-[24px] min-h-[24px]"
+        />
       </div>
+      <form className="flex mx-auto px-4 bg-background pb-4 md:pb-6 gap-2 w-full md:max-w-3xl">
+        <MultimodalInput
+          chatId={id}
+          input={input}
+          setInput={setInput}
+          handleSubmit={handleSubmit}
+          isLoading={isLoading}
+          stop={stop}
+          attachments={attachments}
+          setAttachments={setAttachments}
+          messages={messages}
+          setMessages={setMessages}
+          append={append}
+        />
+      </form>
 
       <AnimatePresence>
         {block?.isVisible && (
@@ -150,6 +153,6 @@ export function Chat({
       </AnimatePresence>
 
       <BlockStreamHandler streamingData={streamingData} setBlock={setBlock} />
-    </>
+    </div>
   );
 }
