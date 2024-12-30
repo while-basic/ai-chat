@@ -15,36 +15,24 @@ export const Overview = () => {
     >
       <div className="rounded-xl p-6 flex flex-col gap-8 leading-relaxed text-center max-w-xl">
         <p className="flex flex-row justify-center gap-4 items-center">
-          <VercelIcon size={32} />
-          <span>+</span>
-          <MessageIcon size={32} />
+          <MessageIcon size={24} />
         </p>
         <p>
-          This is an{' '}
-          <Link
-            className="font-medium underline underline-offset-4"
-            href="https://github.com/vercel/ai-chatbot"
-            target="_blank"
-          >
-            open source
-          </Link>{' '}
-          chatbot template built with Next.js and the AI SDK by Vercel. It uses
-          the{' '}
-          <code className="rounded-md bg-muted px-1 py-0.5">streamText</code>{' '}
-          function in the server and the{' '}
-          <code className="rounded-md bg-muted px-1 py-0.5">useChat</code> hook
-          on the client to create a seamless chat experience.
+          Hello, I am OliveAI.
         </p>
         <p>
-          You can learn more about the AI SDK by visiting the{' '}
-          <Link
-            className="font-medium underline underline-offset-4"
-            href="https://sdk.vercel.ai/docs"
-            target="_blank"
-          >
-            docs
-          </Link>
-          .
+          I am here to help you share your dining experience at one of our Olive Garden restaurants. Feel free to:
+        </p>
+        <ul className="list-disc text-left max-w-md mx-auto space-y-2">
+          <li>Share feedback about your recent visit</li>
+          <li>Report any concerns</li>
+          <li>Suggest improvements to our service</li>
+        </ul>
+        <p>
+          Feel free to chat with me naturally, just as you would with any of our team members.
+        </p>
+        <p className="text-sm text-gray-500 mt-2">
+          Do not share any sensitive personal information, payment details, or private data.
         </p>
       </div>
     </motion.div>
