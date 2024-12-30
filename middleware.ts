@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import type { JWT } from 'next-auth/jwt';
 
 export const config = {
   matcher: [
@@ -17,7 +18,7 @@ export async function middleware(request: NextRequest) {
   // Handle admin routes
   if (request.nextUrl.pathname.startsWith('/admin')) {
     try {
-      const token = await getToken({ req: request });
+      const token = await getToken({ req: request }) as JWT | null;
       
       if (!token) {
         return NextResponse.redirect(new URL('/login', request.url));
