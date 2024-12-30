@@ -29,7 +29,12 @@ export const Suggestion = ({
           }}
           whileHover={{ scale: 1.1 }}
         >
-          <MessageIcon size={windowWidth && windowWidth < 768 ? 16 : 14} />
+          <motion.div
+            className="flex items-center justify-center"
+            whileHover={{ scale: 1.1 }}
+          >
+            <MessageIcon className={windowWidth && windowWidth < 768 ? "size-4" : "size-3.5"} />
+          </motion.div>
         </motion.div>
       ) : (
         <motion.div
@@ -47,13 +52,12 @@ export const Suggestion = ({
               <div className="font-medium">Assistant</div>
             </div>
             <button
-              type="button"
-              className="text-xs text-gray-500 cursor-pointer"
+              className="hover:bg-muted rounded-sm p-1"
               onClick={() => {
                 setIsExpanded(false);
               }}
             >
-              <CrossIcon size={12} />
+              <CrossIcon className="size-[12px]" />
             </button>
           </div>
           <div>{suggestion.description}</div>

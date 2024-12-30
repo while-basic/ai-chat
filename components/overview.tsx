@@ -14,7 +14,7 @@ export const Overview = () => {
     >
       <div className="rounded-xl p-6 flex flex-col gap-8 leading-relaxed text-center max-w-xl">
         <p className="flex flex-row justify-center gap-4 items-center">
-          <MessageIcon size={24} />
+          <MessageIcon className="size-6" />
         </p>
         <p>
           Hello, I am OliveAI.

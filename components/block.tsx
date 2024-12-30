@@ -402,8 +402,8 @@ export function Block({
         <div className="p-2 flex flex-row justify-between items-start">
           <div className="flex flex-row gap-4 items-start">
             <Button
-              variant="outline"
-              className="h-fit p-2 dark:hover:bg-zinc-700"
+              variant="ghost"
+              size="icon"
               onClick={() => {
                 setBlock((currentBlock) => ({
                   ...currentBlock,
@@ -411,7 +411,7 @@ export function Block({
                 }));
               }}
             >
-              <CrossIcon size={18} />
+              <CrossIcon className="size-[18px]" />
             </Button>
 
             <div className="flex flex-col">
@@ -451,7 +451,7 @@ export function Block({
                   }}
                   disabled={block.status === 'streaming'}
                 >
-                  <CopyIcon size={18} />
+                  <CopyIcon className="size-[18px]" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Copy to clipboard</TooltipContent>
@@ -468,7 +468,7 @@ export function Block({
                     currentVersionIndex === 0 || block.status === 'streaming'
                   }
                 >
-                  <UndoIcon size={18} />
+                  <UndoIcon className="size-[18px]" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>View Previous version</TooltipContent>
@@ -483,7 +483,7 @@ export function Block({
                   }}
                   disabled={isCurrentVersion || block.status === 'streaming'}
                 >
-                  <RedoIcon size={18} />
+                  <RedoIcon className="size-[18px]" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>View Next version</TooltipContent>
@@ -505,7 +505,7 @@ export function Block({
                     block.status === 'streaming' || currentVersionIndex === 0
                   }
                 >
-                  <DeltaIcon size={18} />
+                  <DeltaIcon className="size-[18px]" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>View changes</TooltipContent>

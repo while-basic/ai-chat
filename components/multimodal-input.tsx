@@ -300,7 +300,7 @@ export function MultimodalInput({
             setMessages((messages) => sanitizeUIMessages(messages));
           }}
         >
-          <StopIcon size={14} />
+          <StopIcon className="size-[14px]" />
         </Button>
       ) : (
         <Button
@@ -311,7 +311,7 @@ export function MultimodalInput({
           }}
           disabled={input.length === 0 || uploadQueue.length > 0}
         >
-          <ArrowUpIcon size={14} />
+          <ArrowUpIcon className="size-[14px]" />
         </Button>
       )}
 
@@ -324,7 +324,7 @@ export function MultimodalInput({
         variant="outline"
         disabled={isLoading}
       >
-        <PaperclipIcon size={14} />
+        <PaperclipIcon className="size-[14px]" />
       </Button>
     </div>
   );

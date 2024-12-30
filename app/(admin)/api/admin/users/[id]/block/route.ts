@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 
 import { auth } from '@/app/(auth)/auth';
 import { db, getUser } from '@/lib/db/queries';
@@ -8,10 +7,7 @@ import { eq } from 'drizzle-orm';
 
 export const runtime = 'nodejs';
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: Request) {
   const session = await auth();
 
   if (!session?.user?.email) {
@@ -25,11 +21,14 @@ export async function PATCH(
   }
 
   try {
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop();
+
     // Update the user's blocked status
     await db
       .update(user)
       .set({ isBlocked: true })
-      .where(eq(user.id, params.id));
+      .where(eq(user.id, id as string));
 
     return NextResponse.json({ success: true });
   } catch (error) {
