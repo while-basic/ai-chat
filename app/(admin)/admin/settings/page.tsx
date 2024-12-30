@@ -118,7 +118,7 @@ export default function SettingsPage() {
                 value={settings.maxMessagesPerChat}
                 onChange={(e) => setSettings(prev => ({
                   ...prev,
-                  maxMessagesPerChat: parseInt(e.target.value)
+                  maxMessagesPerChat: Number.parseInt(e.target.value)
                 }))}
                 className="w-full px-3 py-2 border rounded-md bg-background text-foreground"
               />
@@ -133,7 +133,7 @@ export default function SettingsPage() {
                 value={settings.maxChatsPerUser}
                 onChange={(e) => setSettings(prev => ({
                   ...prev,
-                  maxChatsPerUser: parseInt(e.target.value)
+                  maxChatsPerUser: Number.parseInt(e.target.value)
                 }))}
                 className="w-full px-3 py-2 border rounded-md bg-background text-foreground"
               />
@@ -148,7 +148,7 @@ export default function SettingsPage() {
                 value={settings.maxMessageLength}
                 onChange={(e) => setSettings(prev => ({
                   ...prev,
-                  maxMessageLength: parseInt(e.target.value)
+                  maxMessageLength: Number.parseInt(e.target.value)
                 }))}
                 className="w-full px-3 py-2 border rounded-md bg-background text-foreground"
               />

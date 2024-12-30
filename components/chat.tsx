@@ -7,10 +7,10 @@ import { useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { useWindowSize } from 'usehooks-ts';
 
-import { ChatHeader } from '@/components/chat-header';
 import { PreviewMessage, ThinkingMessage } from '@/components/message';
 import { useScrollToBottom } from '@/components/use-scroll-to-bottom';
 import type { Vote } from '@/lib/db/schema';
+import type { User } from '@/lib/types/user';
 import { fetcher } from '@/lib/utils';
 
 import { Block, type UIBlock } from './block';
@@ -78,10 +78,6 @@ export function Chat({
 
   return (
     <div className="flex flex-col h-full">
-      <ChatHeader 
-        selectedModelId={selectedModelId}
-        user={user}
-      />
       <div
         ref={messagesContainerRef}
         className="flex flex-col min-w-0 gap-6 flex-1 overflow-y-scroll pt-4"

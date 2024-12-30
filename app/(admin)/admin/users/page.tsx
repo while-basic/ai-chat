@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Search, MoreVertical, Shield, User2, CheckCircle2, XCircle } from 'lucide-react';
+import { Search, Shield, User2, CheckCircle2, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface User {

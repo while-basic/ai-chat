@@ -1,7 +1,7 @@
 import { auth } from '@/app/(auth)/auth';
 import { db, getUser } from '@/lib/db/queries';
 import { chat, message, user } from '@/lib/db/schema';
-import { count, sql, eq, and } from 'drizzle-orm';
+import { sql, eq, } from 'drizzle-orm';
 
 export const runtime = 'nodejs';
 

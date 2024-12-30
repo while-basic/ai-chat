@@ -1,24 +1,31 @@
-import type { ComponentProps } from 'react';
-
-import { type SidebarTrigger, useSidebar } from '@/components/ui/sidebar';
-import { BetterTooltip } from '@/components/ui/tooltip';
+'use client';
 
 import { SidebarLeftIcon } from './icons';
 import { Button } from './ui/button';
+import { useSidebar } from './ui/sidebar';
+import { BetterTooltip } from './ui/tooltip';
 
-export function SidebarToggle({
-  className,
-}: ComponentProps<typeof SidebarTrigger>) {
-  const { toggleSidebar } = useSidebar();
+export function SidebarToggle() {
+  const { toggleSidebar, setOpenMobile, isMobile } = useSidebar();
+
+  const handleClick = () => {
+    if (isMobile) {
+      setOpenMobile(true);
+    } else {
+      toggleSidebar();
+    }
+  };
 
   return (
     <BetterTooltip content="Toggle Sidebar" align="start">
       <Button
-        onClick={toggleSidebar}
-        variant="outline"
-        className="md:px-2 md:h-fit"
+        onClick={handleClick}
+        variant="ghost"
+        size="icon"
+        className="h-9 w-9"
       >
-        <SidebarLeftIcon size={16} />
+        <SidebarLeftIcon />
+        <span className="sr-only">Toggle Sidebar</span>
       </Button>
     </BetterTooltip>
   );

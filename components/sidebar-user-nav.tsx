@@ -41,6 +41,8 @@ export function SidebarUserNav({ user }: { user: User }) {
           <DropdownMenuContent
             side="top"
             className="w-[--radix-popper-anchor-width]"
+            align="start"
+            sideOffset={8}
           >
             <DropdownMenuItem
               className="cursor-pointer"

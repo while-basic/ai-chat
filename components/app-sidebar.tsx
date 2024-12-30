@@ -29,7 +29,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const { setOpenMobile } = useSidebar();
 
   return (
-    <Sidebar>
+    <Sidebar variant="inset">
       <SidebarHeader>
         <SidebarMenu>
           <BetterTooltip content="New Chat" align="start">
@@ -58,6 +58,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
           <Link
             href="/admin"
             className="block px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800 rounded-md mb-2"
+            onClick={() => setOpenMobile(false)}
           >
             Admin Panel
           </Link>

@@ -1,7 +1,7 @@
 import { auth } from '@/app/(auth)/auth';
 import { db, getUser } from '@/lib/db/queries';
 import { chat, message, user } from '@/lib/db/schema';
-import { count, sql, gte, desc, and, eq } from 'drizzle-orm';
+import { count, sql, gte, eq } from 'drizzle-orm';
 import { subDays } from 'date-fns';
 
 export const runtime = 'nodejs';
