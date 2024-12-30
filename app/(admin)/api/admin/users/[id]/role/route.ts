@@ -9,9 +9,10 @@ export const runtime = 'nodejs';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Record<string, string> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
+  const { id } = await params;
 
   if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -30,7 +31,7 @@ export async function PATCH(
     await db
       .update(user)
       .set({ isAdmin })
-      .where(eq(user.id, params.id));
+      .where(eq(user.id, id));
 
     return NextResponse.json({ success: true });
   } catch (error) {
