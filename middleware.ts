@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-
-import { auth } from '@/app/(auth)/auth';
+import { getToken } from 'next-auth/jwt';
 
 export const config = {
   matcher: [
@@ -17,23 +16,20 @@ export const config = {
 };
 
 export async function middleware(request: NextRequest) {
+  const token = await getToken({ req: request });
+
   // Check if the request is for the admin section
   if (request.nextUrl.pathname.startsWith('/admin')) {
-    const session = await auth();
-
-    if (!session?.user?.email) {
+    if (!token) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    // Admin check should be done in the API routes or server components
-    // as Edge Runtime doesn't support direct database access
+    // Admin check will be done in the API routes or server components
     return NextResponse.next();
   }
 
   // Continue with the default auth middleware
-  const session = await auth();
-
-  if (!session?.user) {
+  if (!token) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
