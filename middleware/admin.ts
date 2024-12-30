@@ -5,7 +5,6 @@ import type { Session, User } from 'next-auth';
 
 interface ExtendedUser extends User {
   isAdmin?: boolean;
-  email: string;
 }
 
 interface ExtendedSession extends Session {
@@ -14,17 +13,14 @@ interface ExtendedSession extends Session {
 
 export async function adminMiddleware(request: NextRequest) {
   try {
-    const session = await auth() as ExtendedSession | null;
+    const session = await auth();
     
-    // Check for valid session and user
-    if (!session?.user?.email || !session?.user?.id) {
-      console.log('No valid session or user:', session);
+    if (!session?.user) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    // Check for admin status
-    if (!session.user.isAdmin) {
-      console.log('User is not admin:', session.user.email);
+    const user = session.user as ExtendedUser;
+    if (!user.isAdmin) {
       return NextResponse.redirect(new URL('/', request.url));
     }
 
