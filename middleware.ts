@@ -15,26 +15,32 @@ export const config = {
 };
 
 export async function middleware(request: NextRequest) {
-  // Handle admin routes
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    try {
-      const token = await getToken({ req: request }) as JWT | null;
-      
-      if (!token) {
-        return NextResponse.redirect(new URL('/login', request.url));
-      }
+  const token = await getToken({ req: request }) as JWT | null;
+  const { pathname } = request.nextUrl;
 
-      if (!token.isAdmin) {
-        return NextResponse.redirect(new URL('/', request.url));
-      }
+  // Public routes - allow access even without auth
+  if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
+    // If user is already logged in, redirect to home
+    if (token) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+    return NextResponse.next();
+  }
 
-      return NextResponse.next();
-    } catch (error) {
-      console.error('Admin middleware error:', error);
+  // Protected routes - require auth
+  if (!token) {
+    // If no token and trying to access protected route, redirect to login
+    if (pathname !== '/') {
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }
 
-  // Continue with other routes
+  // Admin routes - require admin privileges
+  if (pathname.startsWith('/admin')) {
+    if (!token?.isAdmin) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  }
+
   return NextResponse.next();
 }
