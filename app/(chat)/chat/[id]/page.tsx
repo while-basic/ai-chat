@@ -5,7 +5,12 @@ import { Chat } from '@/components/chat';
 import { DEFAULT_MODEL_NAME, models } from '@/lib/ai/models';
 import { User } from '@/lib/types/user';
 
-export default async function ChatPage({ params }: { params: { id: string } }) {
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function ChatPage({ params }: PageProps) {
+  const { id } = await params;
   const session = await auth();
   const user = session?.user ? {
     ...session.user,
@@ -22,7 +27,7 @@ export default async function ChatPage({ params }: { params: { id: string } }) {
 
   return (
     <Chat
-      id={params.id}
+      id={id}
       initialMessages={[]}
       selectedModelId={selectedModelId}
       user={user}
