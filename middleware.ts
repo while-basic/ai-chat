@@ -1,11 +1,9 @@
-import NextAuth from 'next-auth';
+import { auth } from '@/lib/auth';
 import type { NextRequest } from 'next/server';
-import { authConfig } from '@/app/(auth)/auth.config';
 import { adminMiddleware } from './middleware/admin';
 
-const { auth } = NextAuth(authConfig);
-
-export default auth;
+// Export the auth middleware as the default middleware
+export { auth as default } from '@/lib/auth';
 
 export const config = {
   matcher: [
@@ -18,12 +16,9 @@ export const config = {
   ],
 };
 
+// Custom middleware for admin routes
 export async function middleware(request: NextRequest) {
-  // Check if the request is for an admin route
   if (request.nextUrl.pathname.startsWith('/admin')) {
     return adminMiddleware(request);
   }
-
-  // Continue with the default auth middleware
-  return auth(request);
 }
