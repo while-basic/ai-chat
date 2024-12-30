@@ -1,38 +1,140 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Search, Calendar, Star, Filter, ChevronDown, ChevronUp } from 'lucide-react';
 import { format } from 'date-fns';
-import type { Chat, Message } from '@/lib/db/schema';
 
-interface ChatWithMessages extends Chat {
+interface MessageContent {
+  type: string;
+  text: string;
+}
+
+interface Message {
+  id: string;
+  role: string;
+  content: string | MessageContent[];
+  createdAt: string;
+}
+
+interface ChatTranscript {
+  id: string;
+  title: string;
+  createdAt: string;
+  userId: string;
+  userEmail: string;
   messages: Message[];
+  isStarred?: boolean;
+}
+
+function parseMessageContent(content: any): string {
+  if (typeof content === 'string') {
+    try {
+      // Try to parse if it's a JSON string
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed)) {
+        return parsed
+          .map(item => (item.text || '').trim())
+          .filter(Boolean)
+          .join(' ');
+      }
+      return content;
+    } catch {
+      return content;
+    }
+  }
+  
+  if (Array.isArray(content)) {
+    return content
+      .map(item => (item.text || '').trim())
+      .filter(Boolean)
+      .join(' ');
+  }
+
+  if (content && typeof content === 'object') {
+    return content.text || JSON.stringify(content);
+  }
+
+  return String(content || '');
 }
 
 export default function TranscriptsPage() {
-  const [chats, setChats] = useState<ChatWithMessages[]>([]);
+  const [transcripts, setTranscripts] = useState<ChatTranscript[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateFilter, setDateFilter] = useState<string>('all');
+  const [expandedTranscript, setExpandedTranscript] = useState<string | null>(null);
+  const [starredTranscripts, setStarredTranscripts] = useState<Set<string>>(new Set());
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
-    const fetchChats = async () => {
-      try {
-        const response = await fetch('/api/admin/chats');
-        if (!response.ok) throw new Error('Failed to fetch chats');
-        const data = await response.json();
-        setChats(data);
-      } catch (error) {
-        console.error('Error fetching chats:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchChats();
+    fetchTranscripts();
   }, []);
 
-  const filteredChats = chats.filter((chat) =>
-    chat.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const fetchTranscripts = async () => {
+    try {
+      const response = await fetch('/api/admin/transcripts');
+      if (!response.ok) throw new Error('Failed to fetch transcripts');
+      const data = await response.json();
+      setTranscripts(data);
+      // Load starred status from localStorage
+      const saved = localStorage.getItem('starredTranscripts');
+      if (saved) {
+        setStarredTranscripts(new Set(JSON.parse(saved)));
+      }
+    } catch (error) {
+      console.error('Error fetching transcripts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleStar = (transcriptId: string) => {
+    setStarredTranscripts(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(transcriptId)) {
+        newSet.delete(transcriptId);
+      } else {
+        newSet.add(transcriptId);
+      }
+      localStorage.setItem('starredTranscripts', JSON.stringify([...newSet]));
+      return newSet;
+    });
+  };
+
+  const filteredTranscripts = transcripts
+    .filter(transcript => {
+      const matchesSearch = 
+        transcript.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        transcript.userEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        transcript.messages.some(msg => 
+          typeof msg.content === 'string' && 
+          msg.content.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+
+      const matchesDate = dateFilter === 'all' || (() => {
+        const date = new Date(transcript.createdAt);
+        const today = new Date();
+        switch (dateFilter) {
+          case 'today':
+            return date.toDateString() === today.toDateString();
+          case 'week':
+            const weekAgo = new Date(today.setDate(today.getDate() - 7));
+            return date >= weekAgo;
+          case 'month':
+            const monthAgo = new Date(today.setMonth(today.getMonth() - 1));
+            return date >= monthAgo;
+          default:
+            return true;
+        }
+      })();
+
+      return matchesSearch && matchesDate;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+    });
 
   if (loading) {
     return (
@@ -43,62 +145,130 @@ export default function TranscriptsPage() {
   }
 
   return (
-    <div>
-      <div className="md:flex md:items-center md:justify-between mb-6">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto">
+      <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:items-center md:justify-between mb-6">
         <h1 className="text-2xl font-bold text-foreground">Chat Transcripts</h1>
-        <div className="mt-4 md:mt-0">
-          <input
-            type="text"
-            placeholder="Search chats..."
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        
+        {/* Search and Filters */}
+        <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 md:items-center">
+          <div className="relative flex-1 sm:flex-none sm:w-64">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <input
+              type="text"
+              placeholder="Search transcripts..."
+              className="pl-10 pr-4 py-2 w-full border rounded-md bg-background text-foreground"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          
+          <div className="flex space-x-4">
+            <select
+              className="px-4 py-2 border rounded-md bg-background text-foreground min-w-[120px]"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+            >
+              <option value="all">All Time</option>
+              <option value="today">Today</option>
+              <option value="week">Past Week</option>
+              <option value="month">Past Month</option>
+            </select>
+
+            <button
+              onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+              className="flex items-center gap-2 px-4 py-2 border rounded-md bg-background text-foreground whitespace-nowrap"
+            >
+              {sortOrder === 'desc' ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+              <span className="hidden sm:inline">Date</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="space-y-6">
-        {filteredChats.map((chat) => (
-          <div key={chat.id} className="bg-card shadow rounded-lg overflow-hidden border border-border">
-            <div className="px-4 py-5 sm:px-6 border-b border-border">
-              <h3 className="text-lg leading-6 font-medium text-card-foreground">
-                {chat.title}
-              </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Created at {format(new Date(chat.createdAt), 'PPpp')}
-              </p>
-            </div>
-            
-            <div className="px-4 py-5 sm:p-6">
-              <div className="space-y-4">
-                {chat.messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`p-4 rounded-lg ${
-                      message.role === 'user'
-                        ? 'bg-primary/10 ml-auto max-w-[80%]'
-                        : 'bg-muted mr-auto max-w-[80%]'
-                    }`}
+      {/* Transcripts List */}
+      <div className="space-y-4">
+        {filteredTranscripts.length === 0 ? (
+          <div className="text-center text-muted-foreground py-8">
+            No transcripts found matching your criteria
+          </div>
+        ) : (
+          filteredTranscripts.map(transcript => (
+            <div
+              key={transcript.id}
+              className="border rounded-lg bg-card"
+            >
+              {/* Transcript Header */}
+              <div 
+                className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 cursor-pointer hover:bg-muted/50"
+                onClick={() => setExpandedTranscript(
+                  expandedTranscript === transcript.id ? null : transcript.id
+                )}
+              >
+                <div className="flex items-start sm:items-center gap-4">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleStar(transcript.id);
+                    }}
+                    className="flex-shrink-0 text-muted-foreground hover:text-yellow-400"
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-foreground">
-                        {message.role === 'user' ? 'User' : 'Assistant'}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {format(new Date(message.createdAt), 'PPpp')}
-                      </span>
-                    </div>
-                    <div className="text-foreground">
-                      {typeof message.content === 'string'
-                        ? message.content
-                        : JSON.stringify(message.content)}
+                    <Star
+                      className={`h-5 w-5 ${
+                        starredTranscripts.has(transcript.id) 
+                          ? 'fill-yellow-400 text-yellow-400' 
+                          : ''
+                      }`}
+                    />
+                  </button>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-foreground truncate">{transcript.title}</h3>
+                    <div className="text-sm text-muted-foreground flex flex-wrap gap-2">
+                      <span className="truncate">{transcript.userEmail}</span>
+                      <span className="hidden sm:inline">•</span>
+                      <span>{format(new Date(transcript.createdAt), 'MMM d, yyyy h:mm a')}</span>
                     </div>
                   </div>
-                ))}
+                </div>
+                <div className="flex items-center gap-2 ml-9 sm:ml-0">
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">
+                    {transcript.messages.length} messages
+                  </span>
+                  {expandedTranscript === transcript.id ? (
+                    <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </div>
               </div>
+
+              {/* Transcript Content */}
+              {expandedTranscript === transcript.id && (
+                <div className="border-t p-4 space-y-4 overflow-x-auto">
+                  {transcript.messages.map((message, index) => (
+                    <div
+                      key={message.id}
+                      className={`flex flex-col sm:flex-row gap-2 sm:gap-4 ${
+                        message.role === 'assistant' ? 'bg-muted/30' : ''
+                      } p-3 rounded-md`}
+                    >
+                      <div className="flex items-center justify-between sm:block">
+                        <div className="text-sm font-medium text-muted-foreground">
+                          {message.role}
+                        </div>
+                        <div className="text-sm text-muted-foreground sm:mt-1">
+                          {format(new Date(message.createdAt), 'h:mm a')}
+                        </div>
+                      </div>
+                      <div className="flex-grow whitespace-pre-wrap break-words">
+                        {parseMessageContent(message.content)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
