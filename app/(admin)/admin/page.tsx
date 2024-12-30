@@ -240,7 +240,9 @@ export default function AdminDashboard() {
                     Avg Messages/Chat
                   </dt>
                   <dd className="text-lg font-semibold text-card-foreground">
-                    {stats.averageMessagesPerChat.toFixed(1)}
+                    {typeof stats.averageMessagesPerChat === 'number' 
+                      ? stats.averageMessagesPerChat.toFixed(1)
+                      : '0.0'}
                   </dd>
                 </dl>
               </div>

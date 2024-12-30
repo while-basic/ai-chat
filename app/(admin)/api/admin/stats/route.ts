@@ -102,7 +102,7 @@ export async function GET() {
       totalUsers: totalUsers.value,
       totalMessages: totalMessages.value,
       activeUsers: activeUsers.value,
-      averageMessagesPerChat: Number(avgMessagesPerChat.value || 0).toFixed(1),
+      averageMessagesPerChat: Number(avgMessagesPerChat.value || 0),
       messagesByDay: messagesByDay.map(day => ({
         date: day.date,
         count: Number(day.count)
