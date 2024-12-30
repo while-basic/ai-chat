@@ -35,7 +35,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
           <BetterTooltip content="New Chat" align="start">
             <Button
               variant="outline"
-              className="h-10 w-10"
+              className="size-10"
               onClick={() => {
                 setOpenMobile(false);
                 router.push('/');

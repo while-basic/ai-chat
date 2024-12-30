@@ -22,7 +22,7 @@ export function SidebarToggle() {
         onClick={handleClick}
         variant="ghost"
         size="icon"
-        className="h-9 w-9"
+        className="size-9"
       >
         <SidebarLeftIcon />
         <span className="sr-only">Toggle Sidebar</span>

@@ -9,7 +9,7 @@ export default async function Page() {
     <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
       <main className="flex-1">
-        <div className="container flex flex-col items-center justify-center gap-4 py-12 text-center md:py-20">
+        <div className="container flex flex-col items-center justify-center gap-4 py-12 text-center md:py-20 max-w-2xl mx-auto">
           <h1 className="text-3xl font-bold sm:text-5xl md:text-6xl lg:text-7xl">
             Welcome to Olive Garden&apos;s
             <br />

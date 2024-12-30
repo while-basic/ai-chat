@@ -18,7 +18,7 @@ export default async function ChatLayout({
   const user = session.user as User;
 
   return (
-    <div className="relative flex h-[100dvh] overflow-hidden">
+    <div className="relative flex h-dvh flex-col overflow-hidden">
       <div className="w-full overflow-auto pl-0 duration-300 ease-in-out peer-data-[state=open]:lg:pl-[250px] peer-data-[state=open]:xl:pl-[300px]">
         <div className="sticky top-0 z-50 flex items-center gap-2 w-full h-16 px-4 border-b shrink-0 bg-gradient-to-b from-background/10 via-background/50 to-background/80 backdrop-blur-xl">
           <SidebarToggle />
