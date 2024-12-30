@@ -12,15 +12,21 @@ interface ExtendedSession extends Session {
 }
 
 export async function adminMiddleware(request: NextRequest) {
-  const session = await auth() as ExtendedSession | null;
-  
-  if (!session?.user?.email) {
+  try {
+    const session = await auth() as ExtendedSession | null;
+    
+    if (!session || !session.user) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+
+    // Check for admin status only if we have a valid user
+    if (!session.user.isAdmin) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+
+    return NextResponse.next();
+  } catch (error) {
+    console.error('Admin middleware error:', error);
     return NextResponse.redirect(new URL('/login', request.url));
   }
-
-  if (!session.user.isAdmin) {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
-
-  return NextResponse.next();
 } 

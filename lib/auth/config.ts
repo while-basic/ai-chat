@@ -12,28 +12,27 @@ export const authConfig = {
   ],
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user;
+      const isLoggedIn = auth?.user != null;
       const isOnChat = nextUrl.pathname.startsWith('/');
       const isOnRegister = nextUrl.pathname.startsWith('/register');
       const isOnLogin = nextUrl.pathname.startsWith('/login');
 
-      if (isLoggedIn && (isOnLogin || isOnRegister)) {
-        return NextResponse.redirect(new URL('/', nextUrl));
+      // Always allow access to auth-related pages
+      if (isOnLogin || isOnRegister) {
+        // If logged in, redirect to home
+        if (isLoggedIn) {
+          return NextResponse.redirect(new URL('/', nextUrl));
+        }
+        return true;
       }
 
-      if (isOnRegister || isOnLogin) {
-        return true; // Always allow access to register and login pages
-      }
-
+      // For chat pages, require authentication
       if (isOnChat) {
         if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
+        return false; // Will redirect to login page
       }
 
-      if (isLoggedIn) {
-        return NextResponse.redirect(new URL('/', nextUrl));
-      }
-
+      // Default allow
       return true;
     },
   },
