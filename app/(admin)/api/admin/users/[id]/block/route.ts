@@ -2,19 +2,18 @@ import { auth } from '@/app/(auth)/auth';
 import { db, getUser } from '@/lib/db/queries';
 import { user } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-import { NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 
 export const runtime = 'nodejs';
 
-type RouteContext = {
-  params: {
-    id: string;
-  };
-};
+interface RouteSegmentConfig {
+  params: { id: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+}
 
 export async function PATCH(
   request: NextRequest,
-  { params }: RouteContext
+  { params }: RouteSegmentConfig
 ) {
   const session = await auth();
 
