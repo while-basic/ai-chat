@@ -1,26 +1,16 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { auth } from '@/lib/auth';
-import type { Session, User } from 'next-auth';
-
-interface ExtendedUser extends User {
-  isAdmin?: boolean;
-}
-
-interface ExtendedSession extends Session {
-  user: ExtendedUser;
-}
+import { getToken } from 'next-auth/jwt';
 
 export async function adminMiddleware(request: NextRequest) {
   try {
-    const session = await auth();
+    const token = await getToken({ req: request });
     
-    if (!session?.user) {
+    if (!token) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    const user = session.user as ExtendedUser;
-    if (!user.isAdmin) {
+    if (!token.isAdmin) {
       return NextResponse.redirect(new URL('/', request.url));
     }
 
