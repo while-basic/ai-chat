@@ -1,39 +1,50 @@
-import type { NextAuthConfig } from 'next-auth';
+import { compare } from 'bcrypt-ts';
+import type { NextAuthConfig, User as NextAuthUser } from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
+import { getUser } from '@/lib/db/queries';
 
-export const authConfig = {
+export const runtime = 'nodejs';
+
+interface ExtendedUser extends NextAuthUser {
+  id: string;
+  isAdmin?: boolean;
+}
+
+export const authConfig: NextAuthConfig = {
   pages: {
     signIn: '/login',
-    newUser: '/',
   },
   providers: [
-    // added later in auth.ts since it requires bcrypt which is only compatible with Node.js
-    // while this file is also used in non-Node.js environments
+    Credentials({
+      credentials: {},
+      async authorize({ email, password }: any) {
+        const users = await getUser(email);
+        if (users.length === 0) return null;
+        // biome-ignore lint: Forbidden non-null assertion.
+        const passwordsMatch = await compare(password, users[0].password!);
+        if (!passwordsMatch) return null;
+        return {
+          id: users[0].id,
+          email: users[0].email,
+          isAdmin: users[0].isAdmin,
+        } as ExtendedUser;
+      },
+    }),
   ],
   callbacks: {
-    authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user;
-      const isOnChat = nextUrl.pathname.startsWith('/');
-      const isOnRegister = nextUrl.pathname.startsWith('/register');
-      const isOnLogin = nextUrl.pathname.startsWith('/login');
-
-      if (isLoggedIn && (isOnLogin || isOnRegister)) {
-        return Response.redirect(new URL('/', nextUrl as unknown as URL));
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.isAdmin = (user as ExtendedUser).isAdmin;
       }
-
-      if (isOnRegister || isOnLogin) {
-        return true; // Always allow access to register and login pages
+      return token;
+    },
+    async session({ session, token }: { session: any; token: any }) {
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.isAdmin = token.isAdmin as boolean;
       }
-
-      if (isOnChat) {
-        if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
-      }
-
-      if (isLoggedIn) {
-        return Response.redirect(new URL('/', nextUrl as unknown as URL));
-      }
-
-      return true;
+      return session;
     },
   },
-} satisfies NextAuthConfig;
+};
