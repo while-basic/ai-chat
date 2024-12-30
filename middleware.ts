@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 import { auth } from '@/app/(auth)/auth';
-import { getUser } from '@/lib/db/queries';
 
 export const config = {
   matcher: [
@@ -26,12 +25,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
 
-    const [user] = await getUser(session.user.email);
-
-    if (!user?.isAdmin) {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
-
+    // Admin check should be done in the API routes or server components
+    // as Edge Runtime doesn't support direct database access
     return NextResponse.next();
   }
 
