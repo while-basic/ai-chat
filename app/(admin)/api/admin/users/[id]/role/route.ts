@@ -1,5 +1,3 @@
-import { NextResponse } from 'next/server';
-
 import { auth } from '@/app/(auth)/auth';
 import { db, getUser } from '@/lib/db/queries';
 import { user } from '@/lib/db/schema';
@@ -7,33 +5,37 @@ import { eq } from 'drizzle-orm';
 
 export const runtime = 'nodejs';
 
-export async function PATCH(req: Request) {
+export async function PATCH(request: Request) {
   const session = await auth();
 
   if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const [currentUser] = await getUser(session.user.email);
   
   if (!currentUser?.isAdmin) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    return Response.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   try {
-    const url = new URL(req.url);
+    const { isAdmin } = await request.json();
+    const url = new URL(request.url);
     const id = url.pathname.split('/').pop();
-    const { isAdmin } = await req.json();
+
+    if (!id) {
+      return Response.json({ error: 'User ID is required' }, { status: 400 });
+    }
 
     // Update user role
     await db
       .update(user)
       .set({ isAdmin })
-      .where(eq(user.id, id as string));
+      .where(eq(user.id, id));
 
-    return NextResponse.json({ success: true });
+    return Response.json({ success: true });
   } catch (error) {
     console.error('Error updating user role:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return Response.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 } 
