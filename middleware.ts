@@ -16,8 +16,9 @@ export const config = {
   ],
 };
 
-// Custom middleware for admin routes
+// Custom middleware for admin routes only
 export async function middleware(request: NextRequest) {
+  // Only handle admin routes, let the default auth middleware handle everything else
   if (request.nextUrl.pathname.startsWith('/admin')) {
     return adminMiddleware(request);
   }
