@@ -30,14 +30,19 @@ import { Textarea } from './ui/textarea';
 
 const suggestedActions = [
   {
-    title: 'I want to share my experience',
-    label: 'from my last visit to Olive Garden',
-    action: 'What is Olive Garden',
+    title: 'Share my dining experience',
+    label: 'about the food and service',
+    action: 'I want to share feedback about my recent dining experience at Olive Garden',
   },
   {
-    title: 'I would like to leave a review',
-    label: 'about my revent visit',
-    action: 'Help me write a review for my visit to Olive Garden',
+    title: 'Report an issue',
+    label: 'with my recent visit',
+    action: 'I need to report an issue I experienced during my visit to Olive Garden',
+  },
+  {
+    title: 'Give compliments',
+    label: 'about exceptional service',
+    action: 'I want to recognize the excellent service I received at Olive Garden',
   },
 ];
 

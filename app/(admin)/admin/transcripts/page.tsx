@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-import { Chat, Message } from '@/lib/db/schema';
+import type { Chat, Message } from '@/lib/db/schema';
 
 interface ChatWithMessages extends Chat {
   messages: Message[];
@@ -37,7 +37,7 @@ export default function TranscriptsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }

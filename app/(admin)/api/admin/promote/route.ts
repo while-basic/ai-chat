@@ -1,4 +1,4 @@
-import { headers } from 'next/headers';
+
 import { auth } from '@/app/(auth)/auth';
 import { getUser, promoteToAdmin } from '@/lib/db/queries';
 
