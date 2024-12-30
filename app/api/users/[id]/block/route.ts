@@ -2,28 +2,36 @@ import { auth } from '@/lib/auth';
 import { db, getUser } from '@/lib/db/queries';
 import { user } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { NextResponse } from 'next/server';
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+type RouteParams = {
+  id: string;
+};
+
+export async function PATCH(
+  _: Request,
+  { params }: { params: RouteParams }
+) {
   try {
     const session = await auth();
     if (!session?.user?.email) {
-      return new Response('Unauthorized', { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const [currentUser] = await getUser(session.user.email);
     if (!currentUser?.isAdmin) {
-      return new Response('Forbidden', { status: 403 });
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { isBlocked } = await req.json();
+    const { isBlocked } = await _.json();
     await db
       .update(user)
       .set({ isBlocked })
       .where(eq(user.id, params.id));
 
-    return Response.json({ success: true });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error updating user block status:', error);
-    return new Response('Internal Server Error', { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 } 
