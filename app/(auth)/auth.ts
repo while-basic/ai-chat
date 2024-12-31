@@ -1,17 +1,22 @@
 import { compare } from 'bcrypt-ts';
-import NextAuth, { type User, type Session } from 'next-auth';
+import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 
 import { getUser } from '@/lib/db/queries';
 
 import { authConfig } from './auth.config';
 
-interface ExtendedUser extends User {
-  isAdmin?: boolean;
-}
-
-interface ExtendedSession extends Session {
-  user: ExtendedUser;
+declare module 'next-auth' {
+  interface User {
+    isAdmin?: boolean;
+  }
+  interface Session {
+    user: User & {
+      id: string;
+      email: string;
+      isAdmin: boolean;
+    };
+  }
 }
 
 export const {
@@ -25,16 +30,19 @@ export const {
     Credentials({
       credentials: {},
       async authorize({ email, password }: any) {
+        if (!email || !password) return null;
+        
         const users = await getUser(email);
         if (users.length === 0) return null;
-        // biome-ignore lint: Forbidden non-null assertion.
+        
         const passwordsMatch = await compare(password, users[0].password!);
         if (!passwordsMatch) return null;
+        
         return {
           id: users[0].id,
           email: users[0].email,
           isAdmin: users[0].isAdmin,
-        } as any;
+        };
       },
     }),
   ],
@@ -42,23 +50,17 @@ export const {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.isAdmin = (user as ExtendedUser).isAdmin;
+        token.email = user.email;
+        token.isAdmin = user.isAdmin;
       }
-
       return token;
     },
-    async session({
-      session,
-      token,
-    }: {
-      session: ExtendedSession;
-      token: any;
-    }) {
-      if (session.user) {
+    async session({ session, token }) {
+      if (session.user && token.email) {
         session.user.id = token.id as string;
+        session.user.email = token.email;
         session.user.isAdmin = token.isAdmin as boolean;
       }
-
       return session;
     },
   },
